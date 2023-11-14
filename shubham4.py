@@ -1,72 +1,125 @@
-class Task:
-    def __init__(self, description, completed=False):
-        self.description = description
-        self.completed = completed
+import os
 
-class ToDoList:
-    def __init__(self):
-        self.tasks = []
+# File to store the tasks
+todo_file = "todo.txt"
+completed_file = "completed.txt"
 
-    def add_task(self, description):
-        task = Task(description)
-        self.tasks.append(task)
+# Check if the task files exist, if not, create them
+if not os.path.exists(todo_file):
+    with open(todo_file, "w") as f:
+        pass
 
-    def mark_task_as_completed(self, index):
-        if 0 <= index < len(self.tasks):
-            self.tasks[index].completed = True
-        else:
-            print("Invalid task index.")
+if not os.path.exists(completed_file):
+    with open(completed_file, "w") as f:
+        pass
 
-    def update_task_description(self, index, new_description):
-        if 0 <= index < len(self.tasks):
-            self.tasks[index].description = new_description
-        else:
-            print("Invalid task index.")
 
-    def remove_task(self, index):
-        if 0 <= index < len(self.tasks):
-            del self.tasks[index]
-        else:
-            print("Invalid task index.")
+def add_task():
+    description = input("Enter the task description: ")
+    due_date = input("Enter due date of the task (optional): ")
+    priority = input("Enter the priority of the task (optional): ")
 
-    def list_tasks(self):
-        for i, task in enumerate(self.tasks):
-            status = "[X]" if task.completed else "[ ]"
-            print(f"{i+1}. {status} {task.description}")
+    task = (f"{description} | Due: {due_date} | Priority: {priority}\n")
 
-def main():
-    todo_list = ToDoList()
+    with open(todo_file, "a") as f:
+        f.write(task)
+    print("Task added successfully.")
 
-    while True:
-        print("\n===== To-Do List =====")
-        todo_list.list_tasks()
 
-        print("\nOptions:")
-        print("1. Add Task")
-        print("2. Mark Task as Completed")
-        print("3. Update Task Description")
-        print("4. Remove Task")
-        print("5. Exit")
+def display_tasks():
+    print("\nTasks:")
+    with open(todo_file, "r") as f:
+        tasks = f.readlines()
+        for i, task in enumerate(tasks, start=1):
+            print(f"{i}. {task.strip()}")
+    print("\nCompleted Tasks:")
+    with open(completed_file, "r") as f:
+        completed_tasks = f.readlines()
+        for i, task in enumerate(completed_tasks, start=1):
+            print(f"{i}. {task.strip()}")
 
-        choice = input("Enter your choice: ")
 
-        if choice == "1":
-            description = input("Enter task description: ")
-            todo_list.add_task(description)
-        elif choice == "2":
-            index = int(input("Enter the task index to mark as completed: ")) - 1
-            todo_list.mark_task_as_completed(index)
-        elif choice == "3":
-            index = int(input("Enter the task index to update description: ")) - 1
-            new_description = input("Enter the new description: ")
-            todo_list.update_task_description(index, new_description)
-        elif choice == "4":
-            index = int(input("Enter the task index to remove: ")) - 1
-            todo_list.remove_task(index)
-        elif choice == "5":
-            break
-        else:
-            print("Invalid choice. Please try again.")
+def mark_completed():
+    display_tasks()
+    task_number = int(input("Enter the number of the task to mark as completed: ")) - 1
 
-if __name__ == "__main__":
-    main()
+    with open(todo_file, "r") as f:
+        tasks = f.readlines()
+
+    if 0 <= task_number < len(tasks):
+        completed_task = tasks.pop(task_number)
+        with open(todo_file, "w") as f:
+            f.writelines(tasks)
+        with open(completed_file, "a") as f:
+            f.write(completed_task)
+        print("Task marked as completed.")
+    else:
+        print("Invalid task number.")
+
+
+def update_task():
+    display_tasks()
+    task_number = int(input("Enter the number of the task to be updated: ")) - 1
+
+    with open(todo_file, "r") as f:
+        tasks = f.readlines()
+
+    if 0 <= task_number < len(tasks):
+        description = input("Enter the updated task description: ")
+        due_date = input("Enter the updated due date (optional): ")
+        priority = input("Enter the updated priority (optional): ")
+
+        updated_task = f"{description} | Due: {due_date} | Priority: {priority}\n"
+        tasks[task_number] = updated_task
+
+        with open(todo_file, "w") as f:
+            f.writelines(tasks)
+        print("Task updated successfully.")
+    else:
+        print("Invalid task number.")
+
+
+def remove_task():
+    display_tasks()
+    task_number = int(input("Enter the number of the task to remove: ")) - 1
+
+    with open(todo_file, "r") as f:
+        tasks = f.readlines()
+
+    if 0 <= task_number < len(tasks):
+        removed_task = tasks.pop(task_number)
+
+        with open(todo_file, "w") as f:
+            f.writelines(tasks)
+        print("Task removed successfully.")
+    else:
+        print("Invalid task number.")
+
+
+# Main loop
+while True:
+    print("\nTo-Do List Application")
+    print("1. Add Task")
+    print("2. Display Tasks")
+    print("3. Mark Task as Completed")
+    print("4. Update Task")
+    print("5. Remove Task")
+    print("6. Exit")
+
+    choice = input("Enter your choice: ")
+
+    if choice == "1":
+        add_task()
+    elif choice == "2":
+        display_tasks()
+    elif choice == "3":
+        mark_completed()
+    elif choice == "4":
+        update_task()
+    elif choice == "5":
+        remove_task()
+    elif choice == "6":
+        print("Goodbye!")
+        break
+    else:
+        print("Invalid choice. Please try again.")
